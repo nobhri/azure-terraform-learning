@@ -57,6 +57,20 @@ Check your public IP address:
 curl ifconfig.me
 ```
 
+Check whether you already have an SSH public key:
+
+```bash
+ls ~/.ssh/*.pub
+```
+
+If no public key exists, create one:
+
+```bash
+ssh-keygen -t ed25519 -C "azure-terraform-learning"
+```
+
+When prompted for the file path, press Enter to use the default path. For this learning project, an empty passphrase is acceptable if you want to keep the steps simple.
+
 ### Usage
 
 Set Terraform variables in your shell instead of creating a `terraform.tfvars` file in this repository:
@@ -65,6 +79,14 @@ Set Terraform variables in your shell instead of creating a `terraform.tfvars` f
 export TF_VAR_subscription_id="$(az account show --query id -o tsv)"
 export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
 export TF_VAR_allowed_ssh_cidr="$(curl -s ifconfig.me)/32"
+```
+
+Check that the variables are set without printing their values:
+
+```bash
+test -n "$TF_VAR_subscription_id" && echo "subscription_id OK"
+test -n "$TF_VAR_admin_ssh_public_key" && echo "admin_ssh_public_key OK"
+test -n "$TF_VAR_allowed_ssh_cidr" && echo "allowed_ssh_cidr OK"
 ```
 
 This keeps local values out of the repository. `admin_ssh_public_key` is a public key, but `subscription_id` and `allowed_ssh_cidr` are still better kept outside tracked files for this learning project.
@@ -106,4 +128,36 @@ Destroy the resources when finished:
 
 ```bash
 terraform destroy
+```
+
+### Troubleshooting
+
+If this command fails:
+
+```bash
+export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+```
+
+With this error:
+
+```text
+cat: /Users/<username>/.ssh/id_ed25519.pub: No such file or directory
+```
+
+It means the SSH public key does not exist at the default path. Create it:
+
+```bash
+ssh-keygen -t ed25519 -C "azure-terraform-learning"
+```
+
+Then run the export command again:
+
+```bash
+export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+```
+
+If `ls ~/.ssh/*.pub` shows a different public key file, use that path instead. For example:
+
+```bash
+export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_rsa.pub)"
 ```
