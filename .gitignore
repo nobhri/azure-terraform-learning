@@ -1,6 +1,5 @@
 # Terraform
 .terraform/
-.terraform.lock.hcl
 
 *.tfstate
 *.tfstate.*
@@ -13,6 +12,7 @@ override.tf.json
 *_override.tf.json
 
 # tfvars
+terraform.tfvars
 *.auto.tfvars
 *.auto.tfvars.json
 
