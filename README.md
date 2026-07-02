@@ -59,19 +59,17 @@ curl ifconfig.me
 
 ### Usage
 
-Copy the example variables file:
+Set Terraform variables in your shell instead of creating a `terraform.tfvars` file in this repository:
 
 ```bash
-cp terraform.tfvars.example terraform.tfvars
+export TF_VAR_subscription_id="$(az account show --query id -o tsv)"
+export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+export TF_VAR_allowed_ssh_cidr="$(curl -s ifconfig.me)/32"
 ```
 
-Edit `terraform.tfvars`:
+This keeps local values out of the repository. `admin_ssh_public_key` is a public key, but `subscription_id` and `allowed_ssh_cidr` are still better kept outside tracked files for this learning project.
 
-```hcl
-subscription_id      = "<subscription-id>"
-admin_ssh_public_key = "ssh-ed25519 AAAA... your-key-comment"
-allowed_ssh_cidr     = "<your-public-ip>/32"
-```
+Do not paste these values into chat or commit local Terraform state. With the local backend, Terraform writes `terraform.tfstate` in this directory after `apply`; it is ignored by Git, but it can still contain Azure resource IDs and IP addresses.
 
 Initialize Terraform:
 
