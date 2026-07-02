@@ -1,0 +1,23 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+
+*.tfstate
+*.tfstate.*
+
+crash.log
+
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# tfvars
+*.auto.tfvars
+*.auto.tfvars.json
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
