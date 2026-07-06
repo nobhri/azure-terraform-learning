@@ -34,8 +34,13 @@ variable "admin_ssh_public_key" {
 }
 
 variable "allowed_ssh_cidr" {
-  description = "CIDR range allowed to connect to SSH. Use your public IP with /32."
+  description = "IPv4 CIDR range allowed to connect to SSH. Use your public IPv4 address with /32."
   type        = string
+
+  validation {
+    condition     = can(cidrnetmask(var.allowed_ssh_cidr))
+    error_message = "allowed_ssh_cidr must be a valid IPv4 CIDR block, for example 203.0.113.10/32."
+  }
 }
 
 variable "tags" {

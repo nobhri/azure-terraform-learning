@@ -54,7 +54,7 @@ az account set --subscription "<subscription-id>"
 Check your public IP address:
 
 ```bash
-curl ifconfig.me
+curl -4 ifconfig.me
 ```
 
 Check whether you already have an SSH public key:
@@ -78,7 +78,7 @@ Set Terraform variables in your shell instead of creating a `terraform.tfvars` f
 ```bash
 export TF_VAR_subscription_id="$(az account show --query id -o tsv)"
 export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
-export TF_VAR_allowed_ssh_cidr="$(curl -s ifconfig.me)/32"
+export TF_VAR_allowed_ssh_cidr="$(curl -4 -s ifconfig.me)/32"
 ```
 
 Check that the variables are set without printing their values:
@@ -161,3 +161,23 @@ If `ls ~/.ssh/*.pub` shows a different public key file, use that path instead. F
 ```bash
 export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_rsa.pub)"
 ```
+
+If `terraform apply` fails while creating the Network Security Group with an error like this:
+
+```text
+SecurityRuleInvalidAddressPrefix: ... invalid Address prefix. Value provided: 2400:.../32
+```
+
+It usually means `TF_VAR_allowed_ssh_cidr` was set from an IPv6 address. This phase uses an IPv4-only VM public IP configuration, so set the SSH source CIDR from your public IPv4 address:
+
+```bash
+export TF_VAR_allowed_ssh_cidr="$(curl -4 -s ifconfig.me)/32"
+```
+
+If that command returns nothing, use another IPv4 lookup endpoint:
+
+```bash
+export TF_VAR_allowed_ssh_cidr="$(curl -s https://api.ipify.org)/32"
+```
+
+Then run `terraform plan` and `terraform apply` again. If the first apply already created some resources before failing, Terraform will continue from the current state.
