@@ -63,12 +63,12 @@ git push origin phase-1-complete
 
 ## Add Project Instructions For Codex
 
-If this repository will keep using Codex, add a small instruction file later, such as `.codex/instructions.md`, with project-specific preferences.
+If this repository will keep using Codex, keep stable project-specific preferences in `AGENTS.md`.
 
 Useful content:
 
 ```markdown
-# Project Instructions
+# Repository Instructions
 
 - Explain Terraform and Azure changes in learning-friendly terms.
 - Prefer small phase-based changes over broad refactors.
@@ -76,6 +76,8 @@ Useful content:
 - Never print secrets, subscription-specific values, SSH keys, or local state contents.
 - After successful apply, remind me to run `terraform destroy` unless the task needs resources to remain.
 - For docs, include the command, the expected result, and the reason.
+- At the end of each learning session, offer to create or update a short retrospective under `docs/sessions/`.
+- Do not read all retrospectives by default. Read the latest one only when the user asks to continue from the previous session or when context is unclear.
 ```
 
 Keep this file short. The best instructions are stable preferences, not a transcript of one session.
