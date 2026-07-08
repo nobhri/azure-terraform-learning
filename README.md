@@ -8,11 +8,12 @@ architecture from the beginning.
 
 ## Current Focus
 
-Phase 1 creates the minimum Azure infrastructure needed to run and reach one
-Linux VM over SSH.
+Phase 2 separates the Phase 1 VM configuration into `dev`, `staging`, and
+`prod` environments while still using local Terraform state.
 
 Start here:
 
+- [Phase 2 guide](docs/phase-2-multiple-environments.md)
 - [Phase 1 guide](docs/phase-1-azure-minimum-configuration.md)
 - [Roadmap](docs/roadmap.md)
 
