@@ -177,6 +177,21 @@ Reason: `.tfvars.example` files are committed as templates. Real `.tfvars`
 files are local because they may later contain environment-specific or sensitive
 values.
 
+The current example values are not secret. Committing real files such as
+`environments/dev/dev.tfvars` would also work for this phase and would remove
+the copy step.
+
+This repository still uses `.tfvars.example` files for two learning reasons:
+
+- it keeps the habit that templates are committed and local environment files
+  are not
+- it leaves room for future environment-specific values without changing the
+  Git safety rule
+
+Secrets and personal values should still come from shell variables such as
+`TF_VAR_subscription_id`, `TF_VAR_admin_ssh_public_key`, and
+`TF_VAR_allowed_ssh_cidr`, not from committed files.
+
 ## Use The Dev Environment
 
 Configure Terraform to use the dev local state path:

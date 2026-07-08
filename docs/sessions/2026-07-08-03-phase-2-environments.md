@@ -59,6 +59,55 @@ such as forgetting `-var-file` or pairing the wrong backend with the wrong
 variable file. Later phases add guardrails through remote state, GitHub Actions,
 module-based environment wrappers, CI checks, and approval boundaries.
 
+The committed `.tfvars.example` files are a learning choice, not a strict
+technical requirement. The current environment values are not secret, so real
+committed `.tfvars` files would also work and would make the commands shorter.
+The example-file approach keeps the pattern that templates belong in Git while
+local environment files stay local, which leaves room for future values that may
+be environment-specific or sensitive.
+
+## Understanding Review
+
+Strong points:
+
+- You correctly connected `variables.tf` defaults and `.tfvars` overrides. That
+  is the core Terraform variable model: defaults provide baseline behavior, and
+  environment files override only the parts that differ.
+- You noticed that backend selection and variable selection can drift apart.
+  That is a practical infrastructure concern, not just a syntax detail.
+- You challenged whether `.tfvars.example` was necessary when the current values
+  are not secret. That is the right kind of tradeoff question because it weighs
+  safety habits against workflow simplicity.
+- You tested `plan`, `apply`, and `destroy` across all three environments
+  instead of trusting the directory structure alone. That confirms the state and
+  variable boundaries with real Terraform behavior.
+
+Weak points to reinforce:
+
+- `terraform init` can feel like it only selects a state file in this phase, but
+  it also prepares providers, lock-file state, and modules. Keep the broader
+  meaning in mind before Phase 3 and Phase 4.
+- `terraform validate` is easy to overinterpret. It validates configuration
+  shape and provider schema usage, but it does not prove Azure resources match
+  the configuration. Use `plan` for that comparison.
+- Local backend workflows depend heavily on the operator remembering the active
+  backend. That is why manual `init` plus manual `-var-file` is a learning
+  workflow, not a strong operating model.
+- `.tfvars` files are not automatically sensitive. The decision to commit them
+  should be based on what they contain and how the team wants to manage local
+  differences.
+
+Next concepts to watch:
+
+- Remote state and locking: how shared state prevents two operators or CI jobs
+  from writing conflicting changes.
+- Environment wrappers: how `cd environments/dev && terraform plan` can reduce
+  backend and variable mismatch compared with root-level commands.
+- CI plan boundaries: how GitHub Actions can make `dev`, `staging`, and `prod`
+  explicit workflow targets instead of manually typed command combinations.
+- Approval boundaries: why production applies should have an extra human or
+  platform-level gate even when the Terraform code is valid.
+
 ## Mistake Captured
 
 During Phase 2 testing, it is possible to initialize the dev backend correctly
