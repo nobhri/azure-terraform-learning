@@ -9,7 +9,8 @@ architecture from the beginning.
 ## Current Focus
 
 Phase 2 separates the Phase 1 VM configuration into `dev`, `staging`, and
-`prod` environments while still using local Terraform state.
+`prod` environments while still using local Terraform state. The next phase
+moves that state to an Azure Blob Storage remote backend.
 
 Start here:
 
@@ -22,10 +23,14 @@ Start here:
 - Phase 0: Repository Setup
 - Phase 1: Azure Minimum Configuration
 - Phase 2: Multiple Environments
-- Phase 3: Remote Backend and GitHub Actions
-- Phase 4: Modules
-- Phase 5: Advanced Network Design
-- Phase 6: CI/CD Improvements
+- Phase 3: Remote Backend
+- Phase 4: GitHub Actions Foundation
+- Phase 5: Modules
+- Phase 6: Identity And RBAC
+- Phase 7: Private Connectivity And DNS
+- Phase 8: Network Control
+- Phase 9: GitHub Actions Plan
+- Phase 10: Controlled Apply
 
 ## Safety Notes
 
