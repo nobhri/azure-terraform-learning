@@ -1,0 +1,9 @@
+project_name = "terraform-learning-staging"
+location     = "japaneast"
+vm_size      = "Standard_B1s"
+
+tags = {
+  environment = "staging"
+  managed_by  = "terraform"
+  phase       = "2"
+}

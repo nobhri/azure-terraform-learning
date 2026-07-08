@@ -1,0 +1,9 @@
+project_name = "terraform-learning-prod"
+location     = "japaneast"
+vm_size      = "Standard_B1s"
+
+tags = {
+  environment = "prod"
+  managed_by  = "terraform"
+  phase       = "2"
+}
