@@ -28,7 +28,12 @@ Use these instructions for this repository unless the user gives a more specific
 
 ## Git Workflow
 
+- Before making or moving changes, always run `git status --short --branch`.
+- Before editing, confirm whether the current branch matches the current task, whether it contains work from a previous session, whether there are existing uncommitted changes, and which files are safe to edit, stage, or commit.
+- Use a new feature branch for each independent task or session. Do not continue work on a branch from a previous session unless the user explicitly asks to amend that branch.
+- If the current branch is from a previous task, keep current changes safe with `git stash`, switch to latest `main`, pull with `git pull --ff-only origin main`, create a new feature branch, then re-apply the changes.
 - Before committing, always run `git status --short --branch` and inspect the diff.
+- Before committing, inspect both unstaged and staged changes with `git diff` and `git diff --cached`.
 - Stage only files related to the requested task. Do not use broad staging when the worktree contains unrelated changes.
 - Use feature branches. Never commit directly to `main`.
 - Use `main` as the default PR base unless the user specifies another branch.
@@ -52,4 +57,5 @@ Use these instructions for this repository unless the user gives a more specific
 - It is acceptable to suggest safe failure experiments on throwaway branches, using `terraform validate` or `terraform plan` before `apply`.
 - When a real error occurs, capture the error pattern and fix in README or a session retrospective if it is likely to help later.
 - At the end of each learning session, offer to create or update a short retrospective under `docs/sessions/`.
+- Name retrospective files as `YYYY-MM-DD-NN-topic.md`, where `NN` is a two-digit sequence number for that date, for example `2026-07-08-01-phase-1-networking.md`.
 - Do not read all retrospectives by default. Read the latest one only when the user asks to continue from the previous session or when context is unclear.

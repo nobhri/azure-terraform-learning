@@ -1,4 +1,4 @@
-# Session 2026-07-06: Phase 1 And Codex Workflow
+# Session 2026-07-06-01: Phase 1 And Codex Workflow
 
 ## Goal
 
