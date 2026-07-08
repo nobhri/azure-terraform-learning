@@ -108,13 +108,9 @@ Git push and GitHub CLI PR creation use different authentication paths. A push
 can succeed through Git credentials while `gh pr create` still fails because
 the GitHub CLI token is expired.
 
-The fix was to refresh authentication with:
-
-```bash
-gh auth login -h github.com
-```
-
-Then re-run the GitHub CLI checks from the normal local environment:
+The important lesson is that the sandboxed `gh` result was not authoritative.
+Codex should have retried the GitHub CLI checks from the normal local
+environment before concluding that the user needed to re-authenticate:
 
 ```bash
 gh auth status
@@ -123,6 +119,13 @@ gh pr list --head codex-phase-3-implementation --json number,title,url,state,isD
 
 Expected result: `gh auth status` reports a logged-in account, and the PR list
 command confirms whether a PR already exists for the branch.
+
+If the normal local environment still reports an invalid token, then refresh
+authentication with:
+
+```bash
+gh auth login -h github.com
+```
 
 After that, the draft PR was created successfully:
 
