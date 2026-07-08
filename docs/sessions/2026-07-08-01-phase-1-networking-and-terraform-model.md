@@ -1,4 +1,4 @@
-# Session 2026-07-08: Phase 1 Networking And Terraform Model
+# Session 2026-07-08-01: Phase 1 Networking And Terraform Model
 
 ## Goal
 

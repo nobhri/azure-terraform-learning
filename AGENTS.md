@@ -57,4 +57,5 @@ Use these instructions for this repository unless the user gives a more specific
 - It is acceptable to suggest safe failure experiments on throwaway branches, using `terraform validate` or `terraform plan` before `apply`.
 - When a real error occurs, capture the error pattern and fix in README or a session retrospective if it is likely to help later.
 - At the end of each learning session, offer to create or update a short retrospective under `docs/sessions/`.
+- Name retrospective files as `YYYY-MM-DD-NN-topic.md`, where `NN` is a two-digit sequence number for that date, for example `2026-07-08-01-phase-1-networking.md`.
 - Do not read all retrospectives by default. Read the latest one only when the user asks to continue from the previous session or when context is unclear.

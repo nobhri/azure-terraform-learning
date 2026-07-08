@@ -8,8 +8,17 @@ Create a short retrospective note at the end of each learning session. The goal 
 
 Suggested format:
 
+File name:
+
+```text
+docs/sessions/YYYY-MM-DD-NN-topic.md
+```
+
+Use a two-digit sequence number after the date, such as `01` or `02`, so
+multiple retrospectives from the same day stay in chronological order.
+
 ```markdown
-# Session YYYY-MM-DD: <topic>
+# Session YYYY-MM-DD-NN: <topic>
 
 ## Goal
 
@@ -77,6 +86,7 @@ Useful content:
 - After successful apply, remind me to run `terraform destroy` unless the task needs resources to remain.
 - For docs, include the command, the expected result, and the reason.
 - At the end of each learning session, offer to create or update a short retrospective under `docs/sessions/`.
+- Name retrospective files as `YYYY-MM-DD-NN-topic.md`, using a two-digit sequence number after the date.
 - Do not read all retrospectives by default. Read the latest one only when the user asks to continue from the previous session or when context is unclear.
 ```
 
