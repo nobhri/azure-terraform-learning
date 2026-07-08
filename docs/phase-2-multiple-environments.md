@@ -118,10 +118,9 @@ The main risks are:
 
 Later phases add guardrails:
 
-- Phase 3 moves state to Azure Blob Storage and introduces GitHub Actions.
-- Phase 4 moves toward environment wrapper directories and reusable modules.
-- Phase 6 adds stronger CI/CD checks, plans, approvals, and environment
-  protection.
+- Phase 3 moves state to Azure Blob Storage.
+- Phase 4 introduces GitHub Actions as a validation runner.
+- Phase 5 moves toward reusable modules.
 
 This phase keeps those safeguards out on purpose so the underlying Terraform
 mechanics are clear before abstraction and automation are added.
