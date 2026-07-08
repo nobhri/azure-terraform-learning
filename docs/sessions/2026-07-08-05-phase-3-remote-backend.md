@@ -95,6 +95,41 @@ write `~/.tenv/.../last-use.txt`. The Terraform command itself still completed.
 Azure backend bootstrap and remote `terraform init` were not completed in this
 session because the learner chose to run Azure-side validation manually.
 
+## PR Creation Note
+
+The branch push succeeded, but draft PR creation initially failed because the
+sandboxed `gh auth status` saw an invalid token:
+
+```text
+The token in default is invalid.
+```
+
+Git push and GitHub CLI PR creation use different authentication paths. A push
+can succeed through Git credentials while `gh pr create` still fails because
+the GitHub CLI token is expired.
+
+The fix was to refresh authentication with:
+
+```bash
+gh auth login -h github.com
+```
+
+Then re-run the GitHub CLI checks from the normal local environment:
+
+```bash
+gh auth status
+gh pr list --head codex-phase-3-implementation --json number,title,url,state,isDraft
+```
+
+Expected result: `gh auth status` reports a logged-in account, and the PR list
+command confirms whether a PR already exists for the branch.
+
+After that, the draft PR was created successfully:
+
+```text
+https://github.com/nobhri/azure-terraform-learning/pull/8
+```
+
 ## Current Git State
 
 Work is on branch:
