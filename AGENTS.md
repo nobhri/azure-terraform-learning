@@ -43,6 +43,11 @@ Use these instructions for this repository unless the user gives a more specific
 
 ## PR Workflow
 
+- Prefer the GitHub CLI (`gh`) as the primary GitHub operation path for this repository.
+- Before creating or inspecting PRs with `gh`, check `gh auth status`. If authentication is invalid, tell the user to re-authenticate with `gh auth login -h github.com`.
+- Use `gh pr create --draft` for draft PR creation after pushing the feature branch, unless the user explicitly asks for a ready-for-review PR.
+- Use `gh pr view`, `gh pr diff`, and `gh pr checks` when inspecting PR details, diffs, or CI status.
+- Treat Codex GitHub connector tools as a fallback or supplement. If connector permissions fail, continue with `gh` when available.
 - PR descriptions should include:
   - what changed
   - why it changed
