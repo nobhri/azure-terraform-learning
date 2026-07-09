@@ -39,6 +39,8 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      TFSTATE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_STORAGE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,7 +54,10 @@ jobs:
 
       - run: terraform fmt -check
 
-      - run: terraform init -backend-config=environments/dev/backend.hcl
+      - run: |
+          terraform init \
+            -backend-config=environments/dev/backend.hcl \
+            -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT"
 
       - run: terraform validate
 ```
@@ -68,13 +73,16 @@ Document these repository variables:
 AZURE_CLIENT_ID
 AZURE_TENANT_ID
 AZURE_SUBSCRIPTION_ID
+TFSTATE_STORAGE_ACCOUNT
 ```
 
-Expected result: GitHub Actions can identify the Azure application, tenant, and
-subscription used for OIDC login.
+Expected result: GitHub Actions can identify the Azure application, tenant,
+subscription, and backend Storage Account used for OIDC login and Terraform
+backend initialization.
 
 Reason: OIDC uses a federated token from GitHub instead of a stored Azure client
-secret.
+secret. The backend Storage Account name remains a repository variable because
+Phase 3 created it with a random suffix.
 
 ## Azure OIDC Setup To Document
 
@@ -99,6 +107,7 @@ Create `docs/phase-4-github-actions-foundation.md` with:
 - Why `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` can be
   repository variables
 - Why no Azure client secret is used
+- How to find the backend Storage Account name if the shell variable is gone
 - Why this phase runs `fmt`, `init`, and `validate` only
 - Why `terraform plan` is deferred to Phase 9
 - Why `terraform apply` is deferred to Phase 10

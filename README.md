@@ -8,11 +8,12 @@ architecture from the beginning.
 
 ## Current Focus
 
-Phase 3 moves Terraform state from local files to an Azure Blob Storage remote
-backend while keeping separate `dev`, `staging`, and `prod` state keys.
+Phase 4 adds GitHub Actions as a low-risk Terraform validation runner after the
+Azure Blob Storage remote backend is in place.
 
 Start here:
 
+- [Phase 4 guide](docs/phase-4-github-actions-foundation.md)
 - [Phase 3 guide](docs/phase-3-remote-backend.md)
 - [Phase 2 guide](docs/phase-2-multiple-environments.md)
 - [Phase 1 guide](docs/phase-1-azure-minimum-configuration.md)
