@@ -8,12 +8,12 @@ architecture from the beginning.
 
 ## Current Focus
 
-Phase 2 separates the Phase 1 VM configuration into `dev`, `staging`, and
-`prod` environments while still using local Terraform state. The next phase
-moves that state to an Azure Blob Storage remote backend.
+Phase 3 moves Terraform state from local files to an Azure Blob Storage remote
+backend while keeping separate `dev`, `staging`, and `prod` state keys.
 
 Start here:
 
+- [Phase 3 guide](docs/phase-3-remote-backend.md)
 - [Phase 2 guide](docs/phase-2-multiple-environments.md)
 - [Phase 1 guide](docs/phase-1-azure-minimum-configuration.md)
 - [Roadmap](docs/roadmap.md)

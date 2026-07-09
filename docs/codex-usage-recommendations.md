@@ -70,6 +70,56 @@ git push origin HEAD
 git push origin phase-1-complete
 ```
 
+## Codex Should Check GitHub CLI Auth In The Right Environment
+
+When Codex creates or updates a GitHub PR, it should check `gh` authentication
+from the same environment that will run the PR command:
+
+```bash
+gh auth status
+```
+
+Expected result: GitHub CLI reports that the active account is logged in and
+shows the expected token scopes.
+
+Reason: `git push` can succeed through Git credentials even when the GitHub CLI
+token used by `gh pr create` is expired or invalid.
+
+If a sandboxed Codex command reports an error like this:
+
+```text
+The token in default is invalid.
+```
+
+Codex should not immediately assume the user's GitHub CLI login is broken.
+First, retry the same `gh` check with normal local environment access so the
+command can read keychain credentials and reach the GitHub API.
+
+If the normal local environment still reports an invalid token, then refresh
+authentication:
+
+```bash
+gh auth login -h github.com
+```
+
+Expected result: GitHub CLI refreshes the account token used for GitHub API
+commands.
+
+Reason: PR creation uses the GitHub API, not just the Git remote credentials
+used by `git push`.
+
+A useful API check before creating the PR is:
+
+```bash
+gh pr list --head <branch-name> --json number,title,url,state,isDraft
+```
+
+Expected result: GitHub CLI returns an empty list when no PR exists, or the
+existing PR metadata.
+
+Reason: this confirms both authentication and API access before attempting
+`gh pr create`.
+
 ## Add Project Instructions For Codex
 
 If this repository will keep using Codex, keep stable project-specific preferences in `AGENTS.md`.

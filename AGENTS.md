@@ -55,6 +55,13 @@ Use these instructions for this repository unless the user gives a more specific
   - any remaining risk or follow-up
 - For documentation-only changes, state that no runtime validation was needed.
 - For Terraform changes, include the Terraform commands that were run and whether Azure resources were applied or destroyed.
+- When using `gh` for PR work, do not treat sandboxed authentication or network
+  failures as the final state. GitHub API commands such as `gh auth status`,
+  `gh pr list`, `gh pr view`, and `gh pr create` may need normal local
+  environment access to read keychain credentials and reach the API. If a
+  sandboxed `gh` command reports an invalid token or API connectivity failure,
+  retry the same `gh` command with the required permission instead of asking
+  the user to re-authenticate first.
 
 ## Learning Workflow
 
