@@ -156,8 +156,8 @@ Recommended learning path:
 1. Start with dev only.
 2. Initialize the dev wrapper against the existing dev backend key.
 3. Use `terraform state list` to inspect current addresses.
-4. Use `terraform state mv` if module addresses need to be mapped from root
-   resource addresses into module resource addresses.
+4. Use declarative `moved` blocks to map root resource addresses into module
+   resource addresses. Keep `terraform state mv` as a manual fallback.
 5. Run `terraform plan` until dev shows no unexpected replacement.
 6. Repeat for staging and prod only if they have real resources that must be
    preserved.
@@ -165,9 +165,10 @@ Recommended learning path:
 Expected result: moving resources into modules changes Terraform addresses
 without recreating Azure resources unnecessarily.
 
-Reason: module refactors often require state address migration because resource
+Reason: module refactors require state address migration because resource
 addresses change from `azurerm_resource_group.main` to names like
-`module.network.azurerm_resource_group.main`.
+`module.network.azurerm_resource_group.main`. A `moved` block keeps that mapping
+reviewable in version control.
 
 ## Verification
 

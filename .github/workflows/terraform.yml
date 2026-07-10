@@ -32,15 +32,17 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform fmt
-        run: terraform fmt -check
+        run: terraform fmt -check -recursive
 
       - name: Terraform init
+        working-directory: environments/dev
         run: |
           terraform init \
-            -backend-config=environments/dev/backend.hcl \
+            -backend-config=backend.hcl \
             -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT" \
             -backend-config="use_azuread_auth=true" \
             -backend-config="use_oidc=true"
 
       - name: Terraform validate
+        working-directory: environments/dev
         run: terraform validate
