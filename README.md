@@ -8,11 +8,12 @@ architecture from the beginning.
 
 ## Current Focus
 
-Phase 4 adds GitHub Actions as a low-risk Terraform validation runner after the
-Azure Blob Storage remote backend is in place.
+Phase 5 refactors the existing network and Linux VM resources into reusable
+Terraform modules, with a separate root module for each environment.
 
 Start here:
 
+- [Phase 5 guide](docs/phase-5-modules.md)
 - [Phase 4 guide](docs/phase-4-github-actions-foundation.md)
 - [Retrospective through Phase 4](docs/start-through-phase-4-retrospective.md)
 - [Mistake prevention notes](docs/mistake-prevention.md)
