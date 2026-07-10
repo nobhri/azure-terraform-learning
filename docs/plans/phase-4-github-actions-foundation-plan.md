@@ -134,9 +134,32 @@ export TFSTATE_RESOURCE_GROUP_ID="$(az group show \
 az role assignment create \
   --assignee-object-id "$AZURE_SP_OBJECT_ID" \
   --assignee-principal-type ServicePrincipal \
+  --role "Reader" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID"
+
+az role assignment create \
+  --assignee-object-id "$AZURE_SP_OBJECT_ID" \
+  --assignee-principal-type ServicePrincipal \
   --role "Storage Blob Data Contributor" \
   --scope "$TFSTATE_RESOURCE_GROUP_ID"
 ```
+
+Confirm backend access:
+
+```bash
+az role assignment list \
+  --assignee "$AZURE_SP_OBJECT_ID" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID" \
+  --query "[].{role:roleDefinitionName, scope:scope}" \
+  --output table
+```
+
+Expected result: the service principal has both `Reader` and `Storage Blob Data
+Contributor` on the backend Resource Group.
+
+Reason: `Reader` covers management-plane reads such as
+`Microsoft.Storage/storageAccounts/read`; `Storage Blob Data Contributor` covers
+state blob access.
 
 Add a federated credential for the repository and pull request workflow.
 

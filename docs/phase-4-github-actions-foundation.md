@@ -205,18 +205,74 @@ export TFSTATE_RESOURCE_GROUP_ID="$(az group show \
 az role assignment create \
   --assignee-object-id "$AZURE_SP_OBJECT_ID" \
   --assignee-principal-type ServicePrincipal \
+  --role "Reader" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID"
+
+az role assignment create \
+  --assignee-object-id "$AZURE_SP_OBJECT_ID" \
+  --assignee-principal-type ServicePrincipal \
   --role "Storage Blob Data Contributor" \
   --scope "$TFSTATE_RESOURCE_GROUP_ID"
 ```
 
-Expected result: the service principal can read and write Terraform state blobs
-in the backend Resource Group.
+Expected result: the service principal has these roles on the backend Resource
+Group:
 
-Reason: `terraform init` needs access to the Azure Blob Storage backend before
-`terraform validate` can run in GitHub Actions.
+```text
+Reader
+Storage Blob Data Contributor
+```
+
+Reason: `terraform init` needs both management-plane and data-plane access to
+the Azure Blob Storage backend before `terraform validate` can run in GitHub
+Actions. `Reader` allows Terraform to retrieve the Storage Account resource,
+including `Microsoft.Storage/storageAccounts/read`. `Storage Blob Data
+Contributor` allows Terraform to read and update the state blob inside the
+backend container.
 
 If the role assignment already exists, Azure may return a conflict message. That
 is okay; it means the permission is already present.
+
+Confirm the assigned roles:
+
+```bash
+az role assignment list \
+  --assignee "$AZURE_SP_OBJECT_ID" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID" \
+  --query "[].{role:roleDefinitionName, scope:scope}" \
+  --output table
+```
+
+Expected result: Azure prints both required roles at the backend Resource Group
+scope.
+
+```text
+Role                           Scope
+-----------------------------  ------------------------------------------------
+Reader                         /subscriptions/.../resourceGroups/terraform-learning-tfstate-rg
+Storage Blob Data Contributor  /subscriptions/.../resourceGroups/terraform-learning-tfstate-rg
+```
+
+Reason: a successful OIDC login only proves GitHub can authenticate as the
+service principal. Terraform still needs Azure RBAC authorization to read the
+backend Storage Account and access the state blob.
+
+If a role was assigned at the Storage Account scope instead of the Resource
+Group scope, use a broader query to find it:
+
+```bash
+az role assignment list \
+  --assignee "$AZURE_SP_OBJECT_ID" \
+  --query "[?contains(scope, 'terraform-learning-tfstate-rg')].{role:roleDefinitionName, scope:scope}" \
+  --output table
+```
+
+Expected result: Azure prints matching role assignments whose scope contains
+the backend Resource Group name.
+
+Reason: exact `--scope` filtering only returns assignments at that exact scope.
+It does not show child-scope assignments such as a role assigned directly to the
+Storage Account.
 
 Add a federated credential for the repository pull request workflow:
 
