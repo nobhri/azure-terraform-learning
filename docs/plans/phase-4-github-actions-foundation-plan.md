@@ -40,15 +40,15 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
-      TFSTATE_STORAGE_ACCOUNT: ${{ vars.TFSTATE_STORAGE_ACCOUNT }}
+      TFSTATE_STORAGE_ACCOUNT: ${{ secrets.TFSTATE_STORAGE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: azure/login@v2
         with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - uses: hashicorp/setup-terraform@v3
 
@@ -65,9 +65,9 @@ jobs:
 This workflow intentionally validates only one environment at first. A later
 phase can add environment matrices, plan output, and apply controls.
 
-## GitHub Variables
+## GitHub Secrets
 
-Document these repository variables:
+Document these repository secrets:
 
 ```text
 AZURE_CLIENT_ID
@@ -81,12 +81,62 @@ subscription, and backend Storage Account used for OIDC login and Terraform
 backend initialization.
 
 Reason: OIDC uses a federated token from GitHub instead of a stored Azure client
-secret. The backend Storage Account name remains a repository variable because
-Phase 3 created it with a random suffix.
+secret. In a private work repository these values would normally fit repository
+variables, but this learning repository is public, so storing them as repository
+secrets reduces accidental log exposure during experiments.
+
+Include commands that populate the values from Azure CLI and pass them directly
+to GitHub CLI:
+
+```bash
+export AZURE_SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
+export AZURE_TENANT_ID="$(az account show --query tenantId --output tsv)"
+export GITHUB_REPOSITORY="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
+
+gh secret set AZURE_CLIENT_ID --body "$AZURE_CLIENT_ID" --repo "$GITHUB_REPOSITORY"
+gh secret set AZURE_TENANT_ID --body "$AZURE_TENANT_ID" --repo "$GITHUB_REPOSITORY"
+gh secret set AZURE_SUBSCRIPTION_ID --body "$AZURE_SUBSCRIPTION_ID" --repo "$GITHUB_REPOSITORY"
+gh secret set TFSTATE_STORAGE_ACCOUNT --body "$TFSTATE_STORAGE_ACCOUNT" --repo "$GITHUB_REPOSITORY"
+```
+
+Expected result: setup can be repeated without manually copying values into
+`gh secret set`.
+
+Reason: `gh` uses the current repository automatically, but `--repo` makes the
+target explicit and safer when commands are copied elsewhere.
 
 ## Azure OIDC Setup To Document
 
-Create or identify an Azure application / service principal for GitHub Actions.
+Create or identify an Azure application / service principal for GitHub Actions:
+
+```bash
+export AZURE_APP_NAME="terraform-learning-github-actions"
+export AZURE_CLIENT_ID="$(az ad app create \
+  --display-name "$AZURE_APP_NAME" \
+  --query appId \
+  --output tsv)"
+
+az ad sp create --id "$AZURE_CLIENT_ID"
+```
+
+Grant backend access:
+
+```bash
+export AZURE_SP_OBJECT_ID="$(az ad sp show \
+  --id "$AZURE_CLIENT_ID" \
+  --query id \
+  --output tsv)"
+export TFSTATE_RESOURCE_GROUP_ID="$(az group show \
+  --name terraform-learning-tfstate-rg \
+  --query id \
+  --output tsv)"
+
+az role assignment create \
+  --assignee-object-id "$AZURE_SP_OBJECT_ID" \
+  --assignee-principal-type ServicePrincipal \
+  --role "Storage Blob Data Contributor" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID"
+```
 
 Add a federated credential for the repository and pull request workflow.
 
@@ -104,8 +154,8 @@ Create `docs/phase-4-github-actions-foundation.md` with:
 - Why the runner needs explicit Azure authentication
 - What OIDC is at a practical level
 - Why `id-token: write` is needed
-- Why `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` can be
-  repository variables
+- Why `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` are
+  identifiers, but are stored as repository secrets in this public learning repo
 - Why no Azure client secret is used
 - How to find the backend Storage Account name if the shell variable is gone
 - Why this phase runs `fmt`, `init`, and `validate` only
@@ -125,7 +175,7 @@ Expected result: Terraform files are already formatted.
 Reason: this mirrors the first Terraform check in CI and does not require Azure
 access.
 
-After GitHub variables and Azure federated credentials are configured, open a
+After GitHub secrets and Azure federated credentials are configured, open a
 pull request.
 
 Expected result: the Terraform workflow runs and completes `fmt`, `init`, and

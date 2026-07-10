@@ -10,7 +10,7 @@ Azure OIDC authentication and the existing Phase 3 remote backend.
 - Confirmed `main` was clean and up to date.
 - Created the `codex-phase-4-github-actions-foundation` branch.
 - Added `.github/workflows/terraform.yml` for pull request validation.
-- Added a Phase 4 guide with repository variables, OIDC notes, workflow
+- Added a Phase 4 guide with repository secrets, OIDC notes, workflow
   commands, local verification, and pull request verification tasks.
 - Updated the README current focus from Phase 3 to Phase 4.
 - Updated the Phase 4 plan so the workflow passes the remote backend Storage
@@ -57,21 +57,33 @@ Expected result: the current shell has the value needed by `terraform init`.
 Reason: the backend files contain the Resource Group, container, and key, but
 not the globally unique Storage Account name.
 
-Set GitHub repository variables after the Azure application and federated
+Set GitHub repository secrets after the Azure application and federated
 credential are ready:
 
 ```bash
-gh variable set AZURE_CLIENT_ID --body "$AZURE_CLIENT_ID"
-gh variable set AZURE_TENANT_ID --body "$AZURE_TENANT_ID"
-gh variable set AZURE_SUBSCRIPTION_ID --body "$AZURE_SUBSCRIPTION_ID"
-gh variable set TFSTATE_STORAGE_ACCOUNT --body "$TFSTATE_STORAGE_ACCOUNT"
+export GITHUB_REPOSITORY="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
+
+gh secret set AZURE_CLIENT_ID --body "$AZURE_CLIENT_ID" --repo "$GITHUB_REPOSITORY"
+gh secret set AZURE_TENANT_ID --body "$AZURE_TENANT_ID" --repo "$GITHUB_REPOSITORY"
+gh secret set AZURE_SUBSCRIPTION_ID --body "$AZURE_SUBSCRIPTION_ID" --repo "$GITHUB_REPOSITORY"
+gh secret set TFSTATE_STORAGE_ACCOUNT --body "$TFSTATE_STORAGE_ACCOUNT" --repo "$GITHUB_REPOSITORY"
 ```
 
-Expected result: GitHub Actions can read the non-secret identifiers needed for
-Azure login and backend initialization.
+Expected result: GitHub Actions can read the identifiers and backend Storage
+Account name needed for Azure login and backend initialization.
 
 Reason: OIDC uses a short-lived token, so this workflow does not need an Azure
 client secret.
+
+Follow-up clarification: `gh secret set` uses the current repository when run
+inside the repo, but adding `--repo "$GITHUB_REPOSITORY"` is safer for copied
+commands. In a private work repository these values would usually be repository
+variables. For this public learning repository, the workflow stores them as
+repository secrets to reduce accidental log exposure during experiments. The
+phase document now includes Azure CLI commands for creating the service
+principal, granting `Storage Blob Data Contributor` on the backend Resource
+Group, creating the pull request federated credential, and piping Azure CLI
+values into GitHub repository secrets without manual copy and paste.
 
 ## Validation Completed
 
@@ -84,7 +96,7 @@ No `terraform apply` or `terraform destroy` was run.
 ## Follow-Up
 
 - Push the Phase 4 branch and open a draft pull request.
-- Configure or confirm the GitHub repository variables.
+- Configure or confirm the GitHub repository secrets.
 - Confirm the Terraform workflow starts on the pull request.
 - Confirm Azure login, `terraform init`, and `terraform validate` pass in
   GitHub Actions.
