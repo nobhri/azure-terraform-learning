@@ -105,6 +105,38 @@ Reason: Azure Storage Account names must be globally unique, lowercase, and
 between 3 and 24 characters. The fixed `tflearn` prefix keeps the name
 recognizable, and the random suffix makes name collisions unlikely.
 
+If a later shell session no longer has this variable, list the Storage Accounts
+in the backend Resource Group:
+
+```bash
+az storage account list \
+  --resource-group terraform-learning-tfstate-rg \
+  --query "[].name" \
+  --output table
+```
+
+Expected result: Azure prints the backend Storage Account name, usually with a
+`tflearn` prefix.
+
+Reason: the Resource Group name is fixed for this learning project, while the
+Storage Account name includes a random suffix.
+
+If there is only one Storage Account in the backend Resource Group, restore the
+shell variable:
+
+```bash
+export TFSTATE_STORAGE_ACCOUNT="$(az storage account list \
+  --resource-group terraform-learning-tfstate-rg \
+  --query "[0].name" \
+  --output tsv)"
+```
+
+Expected result: `TFSTATE_STORAGE_ACCOUNT` is set again for `terraform init`
+commands.
+
+Reason: backend files intentionally avoid committing the globally unique
+Storage Account name.
+
 ## Bootstrap The Backend Storage
 
 Create the backend Resource Group:
