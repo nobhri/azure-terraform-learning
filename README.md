@@ -14,6 +14,10 @@ Azure Blob Storage remote backend is in place.
 Start here:
 
 - [Phase 4 guide](docs/phase-4-github-actions-foundation.md)
+- [Retrospective through Phase 4](docs/start-through-phase-4-retrospective.md)
+- [Mistake prevention notes](docs/mistake-prevention.md)
+- [Phase 5 plan](docs/plans/phase-5-modules-plan.md)
+- [Phase 6 plan](docs/plans/phase-6-identity-rbac-plan.md)
 - [Phase 3 guide](docs/phase-3-remote-backend.md)
 - [Phase 2 guide](docs/phase-2-multiple-environments.md)
 - [Phase 1 guide](docs/phase-1-azure-minimum-configuration.md)

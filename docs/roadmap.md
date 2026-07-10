@@ -128,6 +128,12 @@ how GitHub can authenticate to Azure without a stored client secret and how CI
 can run low-risk checks. It does not add automated `terraform plan` or
 `terraform apply`; those are separate deployment workflow topics.
 
+Retrospective through Phase 4:
+[Start Through Phase 4 Retrospective](start-through-phase-4-retrospective.md)
+
+Mistake prevention notes:
+[Mistake Prevention Notes](mistake-prevention.md)
+
 ## Phase 5: Modules
 
 Refactor VM and network code into modules after the non-module version is
@@ -140,6 +146,8 @@ What this adds:
 - Output
 - Module design
 - Environment wrappers that call modules
+
+Implementation plan: [Phase 5 Plan](plans/phase-5-modules-plan.md)
 
 Why this phase is needed:
 
@@ -161,6 +169,8 @@ What this adds:
 - Role assignment
 - Scope boundaries
 - Storage Account access through RBAC
+
+Implementation plan: [Phase 6 Plan](plans/phase-6-identity-rbac-plan.md)
 
 Why this phase is needed:
 
