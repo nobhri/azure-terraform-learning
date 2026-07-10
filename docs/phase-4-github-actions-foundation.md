@@ -205,30 +205,33 @@ export TFSTATE_RESOURCE_GROUP_ID="$(az group show \
 az role assignment create \
   --assignee-object-id "$AZURE_SP_OBJECT_ID" \
   --assignee-principal-type ServicePrincipal \
-  --role "Reader" \
-  --scope "$TFSTATE_RESOURCE_GROUP_ID"
-
-az role assignment create \
-  --assignee-object-id "$AZURE_SP_OBJECT_ID" \
-  --assignee-principal-type ServicePrincipal \
   --role "Storage Blob Data Contributor" \
   --scope "$TFSTATE_RESOURCE_GROUP_ID"
 ```
 
-Expected result: the service principal has these roles on the backend Resource
+Expected result: the service principal has this role on the backend Resource
 Group:
 
 ```text
-Reader
 Storage Blob Data Contributor
 ```
 
-Reason: `terraform init` needs both management-plane and data-plane access to
-the Azure Blob Storage backend before `terraform validate` can run in GitHub
-Actions. `Reader` allows Terraform to retrieve the Storage Account resource,
-including `Microsoft.Storage/storageAccounts/read`. `Storage Blob Data
-Contributor` allows Terraform to read and update the state blob inside the
-backend container.
+Reason: the workflow initializes the backend with Microsoft Entra ID and OIDC,
+so Terraform accesses the state blob through Azure RBAC instead of retrieving a
+Storage Account key. `Storage Blob Data Contributor` allows Terraform to read
+and update the state blob inside the backend container.
+
+Do not grant `Storage Account Key Operator Service Role` for this phase. That
+role would allow `Microsoft.Storage/storageAccounts/listKeys/action`, causing
+Terraform to retrieve a Storage Account key and use shared-key authentication
+for the backend. This workflow intentionally avoids that path so the GitHub
+Actions backend access stays aligned with OIDC and RBAC.
+
+`Reader` on the backend Storage Account is only required if the backend needs to
+look up the blob endpoint from the Azure management plane, such as when
+`lookup_blob_endpoint=true` is used. This repository does not set that option,
+so the backend can infer the blob endpoint from the Storage Account name and
+container name.
 
 If the role assignment already exists, Azure may return a conflict message. That
 is okay; it means the permission is already present.
@@ -243,13 +246,12 @@ az role assignment list \
   --output table
 ```
 
-Expected result: Azure prints both required roles at the backend Resource Group
-scope.
+Expected result: Azure prints the required backend data-plane role at the
+backend Resource Group scope.
 
 ```text
 Role                           Scope
 -----------------------------  ------------------------------------------------
-Reader                         /subscriptions/.../resourceGroups/terraform-learning-tfstate-rg
 Storage Blob Data Contributor  /subscriptions/.../resourceGroups/terraform-learning-tfstate-rg
 ```
 
@@ -273,6 +275,49 @@ the backend Resource Group name.
 Reason: exact `--scope` filtering only returns assignments at that exact scope.
 It does not show child-scope assignments such as a role assigned directly to the
 Storage Account.
+
+## Local Backend Access
+
+The GitHub Actions service principal and your local Azure CLI user are separate
+Azure identities. Giving the service principal access does not give your local
+user access to the backend state blob.
+
+Check whether your local user has backend blob access:
+
+```bash
+export AZURE_USER_OBJECT_ID="$(az ad signed-in-user show \
+  --query id \
+  --output tsv)"
+
+az role assignment list \
+  --assignee "$AZURE_USER_OBJECT_ID" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID" \
+  --query "[].{role:roleDefinitionName, scope:scope}" \
+  --output table
+```
+
+Expected result: Azure prints `Storage Blob Data Contributor` for your user at
+the backend Resource Group scope.
+
+Reason: local `terraform init` with `use_cli=true` uses your Azure CLI identity
+to list and read blobs in the Terraform state container.
+
+If the role is missing, grant it to your local user:
+
+```bash
+az role assignment create \
+  --assignee-object-id "$AZURE_USER_OBJECT_ID" \
+  --assignee-principal-type User \
+  --role "Storage Blob Data Contributor" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID"
+```
+
+Expected result: your local Azure CLI user can access the backend state blob
+through Azure RBAC.
+
+Reason: without this data-plane role, local backend initialization may fail with
+`AuthorizationPermissionMismatch` while listing blobs, even if `az login`
+succeeds.
 
 Add a federated credential for the repository pull request workflow:
 
@@ -353,14 +398,18 @@ Then it initializes the dev backend:
 ```bash
 terraform init \
   -backend-config=environments/dev/backend.hcl \
-  -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT"
+  -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT" \
+  -backend-config="use_azuread_auth=true" \
+  -backend-config="use_oidc=true"
 ```
 
 Expected result: Terraform configures the Azure Blob Storage backend with the
-`dev/terraform.tfstate` key.
+`dev/terraform.tfstate` key and authenticates to the backend with GitHub OIDC
+and Microsoft Entra ID.
 
-Reason: Phase 4 validates one environment first. Later phases can add an
-environment matrix and plan output.
+Reason: Phase 4 validates one environment first. The backend authentication
+flags are passed only in the CI command because GitHub Actions has an OIDC token
+available. Later phases can add an environment matrix and plan output.
 
 Finally it validates:
 
@@ -391,15 +440,41 @@ If Azure CLI is authenticated and `TFSTATE_STORAGE_ACCOUNT` is set, run:
 ```bash
 terraform init -reconfigure \
   -backend-config=environments/dev/backend.hcl \
-  -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT"
-terraform validate
+  -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT" \
+  -backend-config="use_azuread_auth=true" \
+  -backend-config="use_cli=true" \
+&& terraform validate
 ```
 
 Expected result: Terraform initializes the dev remote backend and validates the
 configuration.
 
-Reason: these commands match the workflow behavior before GitHub Actions runs
-them on a pull request.
+Reason: local manual execution does not have the GitHub Actions OIDC token that
+`use_oidc=true` needs. Local runs use the Azure CLI session with Microsoft Entra
+ID instead, while CI uses GitHub OIDC.
+
+Use `&& terraform validate` so validation only runs after backend
+initialization succeeds. Running `terraform validate` after a failed init can
+look successful if old `.terraform` metadata is still present locally.
+
+For a local read-only preview after initialization, run:
+
+```bash
+export TF_VAR_subscription_id="$(az account show --query id -o tsv)"
+export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"
+export TF_VAR_allowed_ssh_cidr="$(curl -4 -s ifconfig.me)/32"
+
+terraform plan -var-file=environments/dev/dev.tfvars.example
+```
+
+Expected result: Terraform reads the remote state and prints a plan for the dev
+example values without applying changes.
+
+Reason: `plan` verifies the local backend authentication path and provider
+authentication path without creating, updating, or destroying Azure resources.
+The `TF_VAR_*` values supply root module variables that are intentionally not
+committed: the current subscription ID, your SSH public key, and the trusted
+IPv4 CIDR for SSH.
 
 ## Pull Request Verification Todo
 

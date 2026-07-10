@@ -40,6 +40,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       TFSTATE_STORAGE_ACCOUNT: ${{ secrets.TFSTATE_STORAGE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +60,9 @@ jobs:
       - run: |
           terraform init \
             -backend-config=environments/dev/backend.hcl \
-            -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT"
+            -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT" \
+            -backend-config="use_azuread_auth=true" \
+            -backend-config="use_oidc=true"
 
       - run: terraform validate
 ```
@@ -134,12 +139,6 @@ export TFSTATE_RESOURCE_GROUP_ID="$(az group show \
 az role assignment create \
   --assignee-object-id "$AZURE_SP_OBJECT_ID" \
   --assignee-principal-type ServicePrincipal \
-  --role "Reader" \
-  --scope "$TFSTATE_RESOURCE_GROUP_ID"
-
-az role assignment create \
-  --assignee-object-id "$AZURE_SP_OBJECT_ID" \
-  --assignee-principal-type ServicePrincipal \
   --role "Storage Blob Data Contributor" \
   --scope "$TFSTATE_RESOURCE_GROUP_ID"
 ```
@@ -154,12 +153,33 @@ az role assignment list \
   --output table
 ```
 
-Expected result: the service principal has both `Reader` and `Storage Blob Data
+Expected result: the service principal has `Storage Blob Data Contributor` on
+the backend Resource Group.
+
+Reason: the CI backend uses Microsoft Entra ID and GitHub OIDC instead of
+Storage Account key lookup. `Storage Blob Data Contributor` covers state blob
+access. `Reader` is only needed if the backend is configured to look up the blob
+endpoint from the management plane.
+
+Document that local users need their own backend blob access:
+
+```bash
+export AZURE_USER_OBJECT_ID="$(az ad signed-in-user show \
+  --query id \
+  --output tsv)"
+
+az role assignment list \
+  --assignee "$AZURE_USER_OBJECT_ID" \
+  --scope "$TFSTATE_RESOURCE_GROUP_ID" \
+  --query "[].{role:roleDefinitionName, scope:scope}" \
+  --output table
+```
+
+Expected result: the local Azure CLI user also has `Storage Blob Data
 Contributor` on the backend Resource Group.
 
-Reason: `Reader` covers management-plane reads such as
-`Microsoft.Storage/storageAccounts/read`; `Storage Blob Data Contributor` covers
-state blob access.
+Reason: local backend initialization with `use_cli=true` uses the signed-in
+Azure CLI user, not the GitHub Actions service principal.
 
 Add a federated credential for the repository and pull request workflow.
 
@@ -177,6 +197,11 @@ Create `docs/phase-4-github-actions-foundation.md` with:
 - Why the runner needs explicit Azure authentication
 - What OIDC is at a practical level
 - Why `id-token: write` is needed
+- Why CI passes `use_azuread_auth=true` and `use_oidc=true` to `terraform init`
+- Why local manual execution uses `use_azuread_auth=true` and `use_cli=true`
+- Why the local Azure CLI user needs its own backend blob RBAC
+- Why local `terraform plan` still needs `TF_VAR_subscription_id`,
+  `TF_VAR_admin_ssh_public_key`, and `TF_VAR_allowed_ssh_cidr`
 - Why `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` are
   identifiers, but are stored as repository secrets in this public learning repo
 - Why no Azure client secret is used

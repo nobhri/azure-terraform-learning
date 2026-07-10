@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       TFSTATE_STORAGE_ACCOUNT: ${{ secrets.TFSTATE_STORAGE_ACCOUNT }}
 
     steps:
@@ -35,7 +38,9 @@ jobs:
         run: |
           terraform init \
             -backend-config=environments/dev/backend.hcl \
-            -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT"
+            -backend-config="storage_account_name=$TFSTATE_STORAGE_ACCOUNT" \
+            -backend-config="use_azuread_auth=true" \
+            -backend-config="use_oidc=true"
 
       - name: Terraform validate
         run: terraform validate
