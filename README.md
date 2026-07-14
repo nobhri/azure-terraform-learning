@@ -8,21 +8,34 @@ architecture from the beginning.
 
 ## Current Focus
 
-Phase 5 refactors the existing network and Linux VM resources into reusable
-Terraform modules, with a separate root module for each environment.
+Phase 5's module refactor is implemented, with a separate root module for each
+environment. Its planned `phase-5-complete` tag is still pending. Phase 6
+(Identity and RBAC) is the next planned implementation phase.
 
 Start here:
 
+### Current
+
 - [Phase 5 guide](docs/phase-5-modules.md)
-- [Phase 4 guide](docs/phase-4-github-actions-foundation.md)
+- [Phase 6 plan](docs/plans/phase-6-identity-rbac-plan.md)
+- [Roadmap and phase status](docs/roadmap.md)
+
+### Foundation Phases
+
+- [Phase 1: Azure Minimum Configuration](docs/phase-1-azure-minimum-configuration.md)
+- [Phase 2: Multiple Environments](docs/phase-2-multiple-environments.md)
+- [Phase 3: Remote Backend](docs/phase-3-remote-backend.md)
+- [Phase 4: GitHub Actions Foundation](docs/phase-4-github-actions-foundation.md)
+
+### Reference
+
+- [Phase 5 implementation plan](docs/plans/phase-5-modules-plan.md)
 - [Retrospective through Phase 4](docs/start-through-phase-4-retrospective.md)
 - [Mistake prevention notes](docs/mistake-prevention.md)
-- [Phase 5 plan](docs/plans/phase-5-modules-plan.md)
-- [Phase 6 plan](docs/plans/phase-6-identity-rbac-plan.md)
-- [Phase 3 guide](docs/phase-3-remote-backend.md)
-- [Phase 2 guide](docs/phase-2-multiple-environments.md)
-- [Phase 1 guide](docs/phase-1-azure-minimum-configuration.md)
-- [Roadmap](docs/roadmap.md)
+- [Codex usage recommendations](docs/codex-usage-recommendations.md)
+
+The roadmap is the source of truth for phase status and links to completed
+tagged versions.
 
 ## Phases
 
