@@ -15,11 +15,16 @@ network control.
 - Attach the managed identity to the learning VM.
 - Add a small Storage Account for identity and RBAC experiments.
 - Add a Blob Container for access testing.
-- Add role assignments at intentionally chosen scopes.
+- Add a Blob data-plane role assignment at the container scope.
 - Document local user, GitHub Actions service principal, and managed identity
   as separate actors.
 - Add a Phase 6 guide under `docs/`.
-- Update the roadmap and README current focus after Phase 5 is complete.
+- Update the roadmap and README current focus now that Phase 5 is complete.
+
+Implement the new identity, Storage Account, container, and role assignment in
+the `dev` root module. Keep the shared `linux-vm` module responsible only for
+attaching identity IDs supplied by its caller. This keeps the Phase 6 dependency
+graph visible without adding a new module before the resources are understood.
 
 ## Identity Model To Teach
 
@@ -42,7 +47,7 @@ and authorization scope are separated.
 
 Use a narrow, visible scope for the new learning resources.
 
-Possible scopes:
+Scopes to compare conceptually:
 
 - backend Resource Group for Terraform state access
 - workload Resource Group for VM and experiment resources
@@ -55,13 +60,17 @@ Reason: data platform work often depends on understanding whether a permission
 is granted at subscription, Resource Group, Storage Account, container, or
 service-specific scope.
 
+Use the Blob Container as the implemented role assignment scope. It is the
+narrowest scope in this experiment and makes the least-privilege boundary
+visible. Storage Account scope can be tried later as a deliberate comparison.
+
 ## Proposed Resources
 
 Add a user-assigned managed identity:
 
 ```hcl
 resource "azurerm_user_assigned_identity" "vm_workload" {
-  name                = "${var.resource_prefix}-${var.environment}-uami"
+  name                = "${var.project_name}-uami"
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -79,7 +88,7 @@ Attach it to the VM:
 ```hcl
 identity {
   type         = "UserAssigned"
-  identity_ids = [azurerm_user_assigned_identity.vm_workload.id]
+  identity_ids = var.identity_ids
 }
 ```
 
@@ -88,7 +97,10 @@ Expected result: the VM can request Azure tokens as the managed identity.
 Reason: workloads should avoid long-lived credentials when they can use managed
 identity.
 
-Add a small Storage Account and container for access testing.
+Add a small Storage Account and container for access testing. Build the globally
+unique Storage Account name from a short project prefix and a lowercase
+`random_string` suffix. The suffix remains stable in Terraform state after its
+first creation, while forks using independent state receive different names.
 
 Expected result: the managed identity has a concrete Azure data-plane target.
 
@@ -110,7 +122,7 @@ write them.
 Reason: read-only access is a safe starting point for observing data-plane
 permissions.
 
-Then optionally change to:
+After the reader behavior is understood, optionally change to:
 
 ```text
 Storage Blob Data Contributor
@@ -163,16 +175,21 @@ Reason: RBAC debugging starts by confirming the principal, role, and scope.
 From the VM, request a managed identity token:
 
 ```bash
-curl -H Metadata:true \
-  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/" \
+curl --fail --silent --output /dev/null \
+  --header Metadata:true \
+  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/&client_id=<managed-identity-client-id>" \
   --noproxy "*"
 ```
 
-Expected result: Azure Instance Metadata Service returns an access token
-response.
+Expected result: the command exits successfully without printing the access
+token.
 
 Reason: this proves the workload can authenticate as the managed identity. Do
 not print or paste the token into chat or documentation.
+
+Before apply, confirm the Terraform actor can create role assignments at the
+container scope. Authentication and Storage Account management permissions do
+not by themselves grant `Microsoft.Authorization/roleAssignments/write`.
 
 ## Terraform Verification
 

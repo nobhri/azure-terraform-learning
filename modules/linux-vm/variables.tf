@@ -18,6 +18,12 @@ variable "network_interface_id" {
   type        = string
 }
 
+variable "identity_ids" {
+  description = "IDs of user-assigned managed identities attached to the Linux VM."
+  type        = list(string)
+  default     = []
+}
+
 variable "admin_username" {
   description = "Admin username for the Linux VM."
   type        = string
