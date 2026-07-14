@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -36,5 +40,6 @@ module "linux_vm" {
   admin_username       = var.admin_username
   admin_ssh_public_key = var.admin_ssh_public_key
   vm_size              = var.vm_size
+  identity_ids         = [azurerm_user_assigned_identity.vm_workload.id]
   tags                 = var.tags
 }

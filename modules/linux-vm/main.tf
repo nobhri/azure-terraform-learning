@@ -9,6 +9,15 @@ resource "azurerm_linux_virtual_machine" "main" {
 
   network_interface_ids = [var.network_interface_id]
 
+  dynamic "identity" {
+    for_each = length(var.identity_ids) > 0 ? [var.identity_ids] : []
+
+    content {
+      type         = "UserAssigned"
+      identity_ids = identity.value
+    }
+  }
+
   admin_ssh_key {
     username   = var.admin_username
     public_key = var.admin_ssh_public_key

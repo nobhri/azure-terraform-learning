@@ -8,15 +8,15 @@ architecture from the beginning.
 
 ## Current Focus
 
-Phase 5's module refactor is implemented, with a separate root module for each
-environment. Its planned `phase-5-complete` tag is still pending. Phase 6
-(Identity and RBAC) is the next planned implementation phase.
+Phase 5's module refactor is complete. Phase 6 adds a user-assigned managed
+identity to the dev VM and grants it narrowly scoped read access to a separate
+workload Blob Container.
 
 Start here:
 
 ### Current
 
-- [Phase 5 guide](docs/phase-5-modules.md)
+- [Phase 6 guide](docs/phase-6-identity-rbac.md)
 - [Phase 6 plan](docs/plans/phase-6-identity-rbac-plan.md)
 - [Roadmap and phase status](docs/roadmap.md)
 
@@ -29,6 +29,7 @@ Start here:
 
 ### Reference
 
+- [Phase 5 guide](docs/phase-5-modules.md)
 - [Phase 5 implementation plan](docs/plans/phase-5-modules-plan.md)
 - [Retrospective through Phase 4](docs/start-through-phase-4-retrospective.md)
 - [Mistake prevention notes](docs/mistake-prevention.md)

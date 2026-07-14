@@ -21,8 +21,8 @@ Last reviewed: 2026-07-14
 | 2 | Multiple Environments | Complete | [`phase-2-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-2-complete) |
 | 3 | Remote Backend | Complete | [`phase-3-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-3-complete) |
 | 4 | GitHub Actions Foundation | Complete | [`phase-4-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-4-complete) |
-| 5 | Modules | Implemented; completion tag pending | [`phase-5-complete` (planned)](https://github.com/nobhri/azure-terraform-learning/tree/phase-5-complete) |
-| 6 | Identity And RBAC | Planned; next phase | — |
+| 5 | Modules | Complete | [`phase-5-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-5-complete) |
+| 6 | Identity And RBAC | In progress | — |
 | 7 | Private Connectivity And DNS | Planned | — |
 | 8 | Network Control | Planned | — |
 | 9 | GitHub Actions Plan | Planned | — |
