@@ -10,6 +10,33 @@ learning goal. This keeps remote state, automation, modules, identity,
 networking, and controlled deployment separate enough to learn and review one
 concept at a time.
 
+## Progress
+
+Last reviewed: 2026-07-14
+
+| Phase | Topic | Status | Completed version |
+| --- | --- | --- | --- |
+| 0 | Repository Setup | Complete | [`phase-00-init`](https://github.com/nobhri/azure-terraform-learning/tree/phase-00-init) |
+| 1 | Azure Minimum Configuration | Complete | [`phase-1-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-1-complete) |
+| 2 | Multiple Environments | Complete | [`phase-2-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-2-complete) |
+| 3 | Remote Backend | Complete | [`phase-3-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-3-complete) |
+| 4 | GitHub Actions Foundation | Complete | [`phase-4-complete`](https://github.com/nobhri/azure-terraform-learning/tree/phase-4-complete) |
+| 5 | Modules | Implemented; completion tag pending | [`phase-5-complete` (planned)](https://github.com/nobhri/azure-terraform-learning/tree/phase-5-complete) |
+| 6 | Identity And RBAC | Planned; next phase | — |
+| 7 | Private Connectivity And DNS | Planned | — |
+| 8 | Network Control | Planned | — |
+| 9 | GitHub Actions Plan | Planned | — |
+| 10 | Controlled Apply | Planned | — |
+
+`Complete` means the phase has a named repository tag. `Implemented` means the
+code and guide are on `main`, but a completion step such as tagging remains.
+`In progress` means implementation has started but has not reached `main`.
+`Planned` means the scope is recorded below but implementation has not started.
+
+Update this table and its review date when a phase starts, reaches `main`, or
+receives a completion tag. When adding a tag, link directly to the tagged
+repository version.
+
 ## Phase 0: Repository Setup
 
 Create the repository foundation before adding infrastructure.
